@@ -4,6 +4,7 @@ Handler - функция, которая принимает на вход text (
 True если шаг пройден, False если данные введены неправильно.
 """
 import re
+
 from generate_ticket import generate_ticket
 
 re_name = re.compile(r'^[\w\-\s]{3,40}$')

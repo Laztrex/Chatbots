@@ -16,7 +16,7 @@ INTENTS = [
     },
     {
         "name": "Регистрация",
-        "tokens": {"регист", "добав", "зарегай"},
+        "tokens": {"регист", "добав"},
         "scenario": "registration",
         "answer": None
     }
@@ -39,9 +39,7 @@ SCENARIOS = {
                 "next_step": "step3"
             },
             "step3": {
-                "text": "Спасибо за регистрацию, {name}! Ваш билет ниже. "
-                        "Копию мы отправили на {email} билет, распечатайте его.",
-                "image": "generate_ticket_handle",
+                "text": "Спасибо за регистрацию, {name}! Мы отправили на {email} билет, распечатайте его.",
                 "failure_text": None,
                 "handler": None,
                 "next_step": None
@@ -51,8 +49,12 @@ SCENARIOS = {
 }
 
 DEFAULT_ANSWER = "Не знаю как на это ответить. " \
-                 "Но могу сказать когда и где пройдет конференция, а также зарегистрировать вас. Просто спросите"
+                 "Не могу сказать когда и где пройдет конференция, а также зарегистрировать вас. Просто спросите"
+
 
 DB_CONFIG = dict(
-    provider='sqlite', filename='vk_chat_bot.db', create_db=True
+       provider='postgres',
+       user='postgres',
+       host='localhost',
+       database='vk_chat_bot'
 )
