@@ -46,6 +46,7 @@ class Test1(TestCase):
                 assert bot.on_event.call_count == count
 
     INPUTS = [
+        'ты кто',
         'Привет',
         'А Когда',
         'Где будет конференция?',
@@ -58,6 +59,7 @@ class Test1(TestCase):
         settings.DEFAULT_ANSWER,
         settings.INTENTS[0]['answer'],
         settings.INTENTS[1]['answer'],
+        settings.INTENTS[2]['answer'],
         settings.SCENARIOS['registration']['steps']['step1']['text'],
         settings.SCENARIOS['registration']['steps']['step2']['text'],
         settings.SCENARIOS['registration']['steps']['step2']['failure_text'],
