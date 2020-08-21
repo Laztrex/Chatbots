@@ -26,6 +26,12 @@ INTENTS = [
         "tokens": {"регист", "добав", "зарегай"},
         "scenario": "registration",
         "answer": None
+    },
+    {
+        "name": "Кофе",
+        "tokens": {"коф", "меню", "нале"},
+        "scenario": "coffee",
+        "answer": None
     }
 ]
 
@@ -50,6 +56,37 @@ SCENARIOS = {
                 "text": "Спасибо за регистрацию, {name}! Ваш билет ниже. "
                         "Копию мы отправили на {email} билет, распечатайте его.",
                 "image": "generate_ticket_handle",
+                "failure_text": None,
+                "handler": None,
+                "next_step": None
+            }
+        }
+    },
+    "coffee": {
+        "first_step": "step1",
+        "steps": {
+            "step1": {
+                "text": "Нажмите кнопку выбранного напитка",
+                "image": "generate_menu_coffee",
+                "failure_text": "Нет такой кнопки/напитка",
+                "handler": "handle_coffee",
+                "next_step": "step2"
+            },
+            "step2": {
+                "text": "Так, давайте проверим вашу бонусную карту...",
+                "failure_text": None,
+                "handler": "check_bonus_card",
+                "next_step": "step3"
+            },
+            "step3": {
+                "text": "Проведите платёж",
+                "failure_text": "Недостаточно средств",
+                "handler": "pay_coffee",
+                "next_step": "step4"
+            },
+            "step4": {
+                "text": "Держите ваш напиток. Удачного дня!",
+                "image": "generate_img_coffee",
                 "failure_text": None,
                 "handler": None,
                 "next_step": None

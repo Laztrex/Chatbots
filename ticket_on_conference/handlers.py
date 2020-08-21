@@ -6,6 +6,7 @@ True если шаг пройден, False если данные введены 
 import re
 
 from generate_ticket import generate_ticket
+from generate_menu_coffee import generate_menu
 
 re_name = re.compile(r'^[\w\-\s]{3,40}$')
 re_email = re.compile(r'(\b[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)+\b')
@@ -31,3 +32,7 @@ def handle_email(text, context):
 
 def generate_ticket_handle(text, context):
     return generate_ticket(name=context['name'], email=context['email'])
+
+
+def generate_menu_coffee(text, context):
+    return generate_menu()
