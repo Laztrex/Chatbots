@@ -4,12 +4,13 @@ import logging
 
 import requests
 from pony.orm import db_session
+from vk_api.keyboard import VkKeyboard
 
-import handlers, settings
+import handlers
 from models import UserState, Registration
 
 try:
-    pass
+    import settings
 except ImportError:
     exit('Do cp settings.py.default settings.py and set token!')
 
@@ -51,6 +52,13 @@ class VkBot:
         self.long_poller = VkBotLongPoll(self.vk, self.group_id)
         self.api = self.vk.get_api()
 
+        self.pay = VkKeyboard(one_time=True)
+        self.drinks = {"КАПУЧИНО": 80, "ЭСПРЕССО": 60, "ВОДА": 20, "МОЛОКО": 50,
+                       "ЛАТТЕ": 90, "РАФ": 110, "АМЕРИКАНО": 70, "ШОКОЛАД": 65}
+        self.status_message_from_user = False
+        self.keyboard_active = None
+        self.flag_drink = ''
+
     def run(self):
         """Запуск бота"""
         for event in self.long_poller.listen():
@@ -85,11 +93,12 @@ class VkBot:
             else:
                 self.send_text(settings.DEFAULT_ANSWER, user_id)
 
-    def send_text(self, text_to_send, user_id):
+    def send_text(self, text_to_send, user_id, keyboard_active=None):
         self.api.messages.send(
             message=text_to_send,
             random_id=random.randint(0, 2 ** 20),
             peer_id=user_id,
+            keyboard=keyboard_active
         )
 
     def send_image(self, image, user_id):
@@ -113,6 +122,10 @@ class VkBot:
             handler = getattr(handlers, step['image'])
             image = handler(text, context)
             self.send_image(image, user_id)
+        if 'keyboard' in step:
+            handler = getattr(handlers, step['keyboard'])
+            keyboard = handler(self.drinks, self.pay)
+            self.send_text('Выбери напиток', user_id, keyboard_active=keyboard)
 
     def start_scenario(self, user_id, scenario_name, text):
         scenario = settings.SCENARIOS[scenario_name]
@@ -145,9 +158,14 @@ class VkBot:
                 state.step_name = step['next_step']
             else:
                 # finish scenario
-                log.info('Зарегистрирован: {name} {email}'.format(**state.context))
-                Registration(name=state.context['name'], email=state.context['email'])
-                state.delete()
+                if state.scenario_name == 'coffee':
+                    log.info('Выдан кофе')
+                    # TODO: добавить в бд для бонусов и подсчета выпитого кофе (в день не больше трех, например)
+                    state.delete()
+                else:
+                    log.info('Зарегистрирован: {name} {email}'.format(**state.context))
+                    Registration(name=state.context['name'], email=state.context['email'])
+                    state.delete()
         else:
             # retry current step
             text_to_send = step['failure_text'].format(**state.context)
