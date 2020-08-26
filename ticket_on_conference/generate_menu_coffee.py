@@ -1,12 +1,6 @@
 from io import BytesIO
 
-import requests
-from PIL import Image, ImageDraw, ImageFont
-
-from io import BytesIO
-
-import requests
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
 
 TEMPLATE_PATH = 'files/menu_coffee.jpg'
 FONT_PATH = 'files/Roboto-Regular.ttf'
@@ -20,16 +14,6 @@ AVATAR_OFFSET = (100, 200)
 
 def generate_menu():
     base = Image.open(TEMPLATE_PATH).convert("RGBA")
-    font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
-
-    # draw = ImageDraw.Draw(base)
-    # draw.text(NAME_OFFSET, name, font=font, fill=BLACK)
-    # draw.text(EMAIL_OFFSET, email, font=font, fill=BLACK)
-
-    # response = requests.get(url=f'https://api.adorable.io/avatars/{AVATAR_SIZE}/{email}')
-    # avatar_file_like = BytesIO(response.content)
-    # avatar = Image.open(avatar_file_like)
-    # base.paste(avatar, AVATAR_OFFSET)
 
     temp_file = BytesIO()
     base.save(temp_file, 'png')

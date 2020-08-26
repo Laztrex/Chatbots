@@ -53,8 +53,7 @@ class VkBot:
         self.api = self.vk.get_api()
 
         self.pay = VkKeyboard(one_time=True)
-        self.drinks = {"КАПУЧИНО": 80, "ЭСПРЕССО": 60, "ВОДА": 20, "МОЛОКО": 50,
-                       "ЛАТТЕ": 90, "РАФ": 110, "АМЕРИКАНО": 70, "ШОКОЛАД": 65}
+
         self.status_message_from_user = False
         self.keyboard_active = None
         self.flag_drink = ''
@@ -124,7 +123,7 @@ class VkBot:
             self.send_image(image, user_id)
         if 'keyboard' in step:
             handler = getattr(handlers, step['keyboard'])
-            keyboard = handler(self.drinks, self.pay)
+            keyboard = handler(step['drinks'], self.pay)
             self.send_text('Выбери напиток', user_id, keyboard_active=keyboard)
 
     def start_scenario(self, user_id, scenario_name, text):
