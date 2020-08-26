@@ -68,7 +68,10 @@ SCENARIOS = {
             "step1": {
                 "text": "Нажмите кнопку выбранного напитка",
                 "image": "generate_menu_coffee",
-                "failure_text": "Нет такой кнопки/напитка",
+                "keyboard": "view_keyboard",
+                "drinks": {1: 80, 2: 60, 3: 20, 4: 50,
+                       5: 90, 6: 110, 7: 70, 8: 65},
+                "failure_text": None,
                 "handler": "handle_coffee",
                 "next_step": "step2"
             },
