@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import datetime
 import random
 import logging
 
@@ -7,7 +8,7 @@ from pony.orm import db_session
 from vk_api.keyboard import VkKeyboard
 
 import handlers
-from models import UserState, Registration
+from models import UserState, Registration, BonusCardCoffee
 
 try:
     import settings
@@ -16,7 +17,6 @@ except ImportError:
 
 import vk_api
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
-
 
 log = logging.getLogger('bot')
 
@@ -140,12 +140,22 @@ class VkBot:
         handler = getattr(handlers, step['handler'])
 
         # TODO: доработать
-        if state.scenario_name == 'registration' and state.step_name == 'step2':
-            for i in Registration.select():
-                if text == i.email:
-                    text_to_send = step['failure_text2'].format(**state.context)
-                    self.send_text(text_to_send, user_id)
-                    return
+        if state.step_name == 'step2':
+            if state.scenario_name == 'registration':
+                for i in Registration.select():
+                    if text == i.email:
+                        text_to_send = step['failure_text2'].format(**state.context)
+                        self.send_text(text_to_send, user_id)
+                        return
+            else:
+                for users_db in BonusCardCoffee.select(lambda users_db: users_db.count < 10):
+                    if str(user_id) == users_db.user_id:
+                        users_db.count += 1
+                        self.send_text('Да, сегодня ещё есть бесплатный кофе', user_id)
+                        step = steps[step['next_step']]
+                        break
+                else:
+                    self.send_text(step['failure_text'], user_id)
 
         if handler(text=text, context=state.context):
             # next step
@@ -160,10 +170,12 @@ class VkBot:
                 if state.scenario_name == 'coffee':
                     log.info('Выдан кофе')
                     # TODO: добавить в бд для бонусов и подсчета выпитого кофе (в день не больше трех, например)
+                    self.pay.get_empty_keyboard()
                     state.delete()
                 else:
                     log.info('Зарегистрирован: {name} {email}'.format(**state.context))
                     Registration(name=state.context['name'], email=state.context['email'])
+                    BonusCardCoffee(user_id=str(user_id), date=datetime.datetime.now().date(), count=0)
                     state.delete()
         else:
             # retry current step

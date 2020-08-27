@@ -1,4 +1,4 @@
-from pony.orm import Database, Required, Json
+from pony.orm import Database, Required, Json, Optional, PrimaryKey
 from settings import DB_CONFIG
 
 db = Database()
@@ -7,6 +7,7 @@ db.bind(**DB_CONFIG)
 
 class UserState(db.Entity):
     """Состояние пользователя внутри сценария"""
+    id = PrimaryKey(int, auto=True)
     user_id = Required(str, unique=True)
     scenario_name = Required(str)
     step_name = Required(str)
@@ -15,8 +16,15 @@ class UserState(db.Entity):
 
 class Registration(db.Entity):
     """Заявка на регистрацию"""
+    id = PrimaryKey(int, auto=True)
     name = Required(str)
-    email = Required(str)
+    email = Required(str, unique=True)
+
+
+class BonusCardCoffee(db.Entity):
+    id = PrimaryKey(int, auto=True)
+    user_id = Required(str, unique=True)
+    count = Optional(int)
 
 
 db.generate_mapping(create_tables=True)
