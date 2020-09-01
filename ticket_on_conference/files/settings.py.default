@@ -70,21 +70,22 @@ SCENARIOS = {
                 "image": "generate_menu_coffee",
                 "keyboard": "view_keyboard",
                 "drinks": {1: 80, 2: 60, 3: 20, 4: 50,
-                       5: 90, 6: 110, 7: 70, 8: 65},
+                           5: 90, 6: 110, 7: 70, 8: 65},
                 "failure_text": None,
                 "handler": "handle_coffee",
                 "next_step": "step2"
             },
             "step2": {
                 "text": "Так, давайте проверим вашу бонусную карту...",
-                "failure_text": None,
+                "failure_text": 'Вас нет в базе:( Зарегистрируйтесь на конференцию и будет бесплатный кофе!',
                 "handler": "check_bonus_card",
                 "next_step": "step3"
             },
             "step3": {
                 "text": "Проведите платёж",
+                "pay": "pay_coffee",
                 "failure_text": "Недостаточно средств",
-                "handler": "pay_coffee",
+                "handler": "handle_coffee",
                 "next_step": "step4"
             },
             "step4": {

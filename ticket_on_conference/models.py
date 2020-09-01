@@ -23,7 +23,7 @@ class Registration(db.Entity):
 
 class BonusCardCoffee(db.Entity):
     id = PrimaryKey(int, auto=True)
-    user_id = Required(str, unique=True)
+    email_card = Required(str, unique=True)
     count = Optional(int)
 
 

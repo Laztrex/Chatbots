@@ -148,8 +148,8 @@ class VkBot:
                         self.send_text(text_to_send, user_id)
                         return
             else:
-                for users_db in BonusCardCoffee.select(lambda users_db: users_db.count < 10):
-                    if str(user_id) == users_db.user_id:
+                for users_db in BonusCardCoffee.select(lambda x: x.count < 10):
+                    if text == users_db.email_card:
                         users_db.count += 1
                         self.send_text('Да, сегодня ещё есть бесплатный кофе', user_id)
                         step = steps[step['next_step']]
@@ -175,7 +175,7 @@ class VkBot:
                 else:
                     log.info('Зарегистрирован: {name} {email}'.format(**state.context))
                     Registration(name=state.context['name'], email=state.context['email'])
-                    BonusCardCoffee(user_id=str(user_id), date=datetime.datetime.now().date(), count=0)
+                    BonusCardCoffee(email_card=state.context['email'], count=0)
                     state.delete()
         else:
             # retry current step
