@@ -51,16 +51,16 @@ def view_keyboard(text, context):
     return context.get_keyboard()
 
 
-# def handle_coffee(text, context):
-#     return 'пока ничего'
-#
-#
-# def check_bonus_card(text, context):
-#     return 'пока ничего'
-#
-#
-# def pay_coffee(text, context):
-#     return 'пока ничего'
+def handle_coffee(text, context):
+    return 'пока ничего'
+
+
+def check_bonus_card(text, context):
+    return 'пока ничего'
+
+
+def pay_coffee(text, context):
+    return 'пока ничего'
 
 
 def generate_img_coffee(text, context):
