@@ -137,16 +137,12 @@ class VkBot:
         steps = settings.SCENARIOS[state.scenario_name]['steps']
         step = steps[state.step_name]
 
-        handler = getattr(handlers, step['handler'])
-
-        # TODO: доработать
-        if state.step_name == 'step2':
-            if state.scenario_name == 'registration':
-                for i in Registration.select():
-                    if text == i.email:
-                        text_to_send = step['failure_text2'].format(**state.context)
-                        self.send_text(text_to_send, user_id)
-                        return
+        if state.scenario_name == 'registration' and state.step_name == 'step2':
+            for i in Registration.select():
+                if text == i.email:
+                    text_to_send = step['failure_text2'].format(**state.context)
+                    self.send_text(text_to_send, user_id)
+                    return
             else:
                 for users_db in BonusCardCoffee.select(lambda x: x.count < 10):
                     if text == users_db.email_card:
@@ -156,6 +152,8 @@ class VkBot:
                         break
                 else:
                     self.send_text(step['failure_text'], user_id)
+
+        handler = getattr(handlers, step['handler'])
 
         if handler(text=text, context=state.context):
             # next step
