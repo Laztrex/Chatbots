@@ -18,6 +18,22 @@ re_name = re.compile(r'^[\w\-\s]{3,40}$')
 re_email = re.compile(r'(\b[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)+\b')
 
 
+def keyboard_welcome(text, context):
+    context.add_callback_button(label='Зарегистрироваться', color=VkKeyboardColor.SECONDARY,
+                                payload={"type": "show_snackbar", "text": "Ну поехали"})
+
+    context.add_line()
+
+    context.add_callback_button(label='Самолёт', color=VkKeyboardColor.POSITIVE,
+                                payload={"type": "show_snackbar", "text": "Ну поехали"})
+    context.add_line()
+
+    context.add_callback_button(label='Кофе', color=VkKeyboardColor.NEGATIVE,
+                                payload={"type": "show_snackbar", "text": "Ну поехали"})
+
+    return context.get_keyboard()
+
+
 def handle_name(text, context):
     match = re.match(re_name, text)
     if match:
@@ -46,11 +62,15 @@ def generate_menu_coffee(text, context):
 
 def view_keyboard(text, context):
     if not context.keyboard['buttons'][0]:
-        for num, drink in enumerate(text.items()):
+        for num, drink in enumerate(text['drinks'].items()):
             if num == 4:
                 context.add_line()
             context.add_button(f'{drink[0]}', color=VkKeyboardColor.DEFAULT)
     return context.get_keyboard()
+
+
+def handle_welcome(text, context):
+    return True
 
 
 def handle_coffee(text, context):
@@ -66,11 +86,13 @@ def pay_coffee(text, context):
 
 
 def handle_departure_point(text, context):
-    return True
+    context.add_location_button()
+    return context.get_keyboard()
 
 
 def handle_destination_point(text, context):
-    return True
+    context.add_location_button()
+    return context.get_keyboard()
 
 
 def handle_date(text, context):
@@ -79,10 +101,9 @@ def handle_date(text, context):
     :param context:
     :return: False - failure_text; True - обработано ок
     """
-    print(text)
-    print(context)
     write_future_context = analyze_date(text)
-    return write_future_context
+    context["date"] = text
+    return True
 
 
 def check_data(text, context):
@@ -102,14 +123,24 @@ def generate_img_coffee(text, context):
 
 
 def generate_ticket_air(text, context):
-    return ticket_air(context['name'], context['email'])
+    return ticket_air(context)
 
 
-def super_handler(text, context):
-    for idx, (handler, unit) in enumerate(
-            zip([handle_name, handle_departure_point, handle_destination_point, handle_date, handle_email],
-                context)):
-        handler(unit[text[idx]])
+# def super_handler(text, context):
+#     for idx, (handler, unit) in enumerate(
+#             zip([handle_name, handle_departure_point, handle_destination_point, handle_date, handle_email],
+#                 context)):
+#         handler(unit[text[idx]])
+
+
+def add_landing(text, context):
+    context["landing"] = text
+    return True
+
+
+def add_direction(text, context):
+    context["direction"] = text
+    return True
 
 
 def analyze_date(strange_date):
@@ -124,10 +155,10 @@ def analyze_date(strange_date):
     try:
         parsed_dates = pd.to_datetime(strange_date).date()
     except Exception:
-        parsed_dates = strange_date
+        return False
     print(parsed_dates)
     print(type(parsed_dates))
-    return True
+    return parsed_dates
 
 
 def analyze_point(city):
@@ -136,3 +167,10 @@ def analyze_point(city):
 
 def analyze_ever(think):
     pass
+
+
+def draw_ticket(text, context):
+    """Будет класс рисовальщика, туда заносится инфа
+    Затем при отрисовки картинки вся инфа стянется"""
+
+    return True

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import datetime
+import json
 import random
 import logging
 
@@ -8,7 +9,7 @@ from pony.orm import db_session
 from vk_api.keyboard import VkKeyboard
 
 import handlers
-from models import UserState, Registration, BonusCardCoffee
+from models import UserState, Registration, BonusCardCoffee, RegistrationAirline
 
 try:
     import settings
@@ -70,14 +71,20 @@ class VkBot:
     def on_event(self, event):
         """Отправляет сообщение назад, если оно текстовое"""
         if event.type != VkBotEventType.MESSAGE_NEW:
-            log.info('мы пока не можем обрабатывать этот тип %s', event.type)
-            return
+            if event.type == VkBotEventType.MESSAGE_EVENT:
+                print(event)
+            else:
+                log.info('мы пока не можем обрабатывать этот тип %s', event.type)
+                return
 
         user_id = event.object.peer_id
         text = event.object.text
         state = UserState.get(user_id=str(user_id))
 
-        if state is not None:
+        if event.object.get('geo'):
+            text = event.object.get('geo')['place']['title']
+
+        if state is not None and state.scenario_name != 'welcome':
             self.continue_scenario(text, state, user_id)
         else:
             # search intent
@@ -123,15 +130,17 @@ class VkBot:
             self.send_image(image, user_id)
         if 'keyboard' in step:
             handler = getattr(handlers, step['keyboard'])
-            keyboard = handler(step['drinks'], self.pay)
+            keyboard = handler(step, self.pay)
             self.send_text('Выбери напиток', user_id, keyboard_active=keyboard)
+            self.pay = VkKeyboard(one_time=True)
 
     def start_scenario(self, user_id, scenario_name, text):
         scenario = settings.SCENARIOS[scenario_name]
         first_step = scenario['first_step']
         step = scenario['steps'][first_step]
         self.send_step(step, user_id, text, context={})
-        UserState(user_id=str(user_id), scenario_name=scenario_name, step_name=first_step, context={})
+        if scenario_name != 'welcome':
+            UserState(user_id=str(user_id), scenario_name=scenario_name, step_name=first_step, context={})
 
     def continue_scenario(self, text, state, user_id):
         steps = settings.SCENARIOS[state.scenario_name]['steps']
@@ -170,10 +179,19 @@ class VkBot:
                     # TODO: добавить в бд для бонусов и подсчета выпитого кофе (в день не больше трех, например)
                     self.pay.get_empty_keyboard()
                     state.delete()
-                else:
+                elif state.scenario_name == 'registration':
                     log.info('Зарегистрирован: {name} {email}'.format(**state.context))
                     Registration(name=state.context['name'], email=state.context['email'])
                     BonusCardCoffee(email_card=state.context['email'], count=0)
+                    state.delete()
+                elif state.scenario_name == 'airfly':
+                    log.info('Зарегистрирован на полёт: {name} {email}. Рейс: {landing}-{direction}, {date}'
+                             .format(**state.context))
+                    RegistrationAirline(name=state.context['name'], email=state.context['email'],
+                                        landing=state.context['landing'], direction=state.context['direction'],
+                                        date=state.context['date'])
+                    state.delete()
+                else:
                     state.delete()
         else:
             # retry current step

@@ -1,3 +1,5 @@
+import datetime
+
 from pony.orm import Database, Required, Json, Optional, PrimaryKey
 from settings import DB_CONFIG
 
@@ -19,6 +21,15 @@ class Registration(db.Entity):
     id = PrimaryKey(int, auto=True)
     name = Required(str)
     email = Required(str, unique=True)
+
+
+class RegistrationAirline(db.Entity):
+    id = PrimaryKey(int, auto=True)
+    name = Required(str)
+    email = Required(str, unique=True)
+    landing = Required(str)
+    direction = Required(str)
+    date = Optional(str)  # TODO
 
 
 class BonusCardCoffee(db.Entity):

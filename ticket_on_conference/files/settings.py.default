@@ -1,12 +1,12 @@
 GROUP_ID = 187930812
-TOKEN = ""
+TOKEN = "24228dc48b25134e761af709d6a29f7149c34012fe825a6fe00332123f81a773c0ee9fc60d1bd23dd0247"
 
 INTENTS = [
     {
         "name": "Приветствие",
-        "tokens": {"прив", "здрав", "hello"},
-        "scenario": None,
-        "answer": "Привет! Могу зарегистрировать, подсказать место и дату проведения конференции"
+        "tokens": {"прив", "здрав", "hello", "привет"},
+        "scenario": "welcome",
+        "answer": None
 
     },
     {
@@ -28,6 +28,12 @@ INTENTS = [
         "answer": None
     },
     {
+        "name": "Билет на самолёт",
+        "tokens": {"билет", "самолёт", "вжух"},
+        "scenario": "airfly",
+        "answer": None
+    },
+    {
         "name": "Кофе",
         "tokens": {"коф", "меню", "нале"},
         "scenario": "coffee",
@@ -36,6 +42,27 @@ INTENTS = [
 ]
 
 SCENARIOS = {
+
+    "welcome": {
+        "first_step": "step1",
+        "steps": {
+            "step1": {
+                "text": "Выбирай!",
+                "failure_text": "Эмм...",
+                "handler": None,
+                "keyboard": "keyboard_welcome",
+                "next_step": None
+            },
+            # "step2": {
+            #     "text": "AAA",
+            #     "failure_text": "Во введенном адресе ошибка. Попробуйте еще раз",
+            #     "failure_text2": "Такой email уже существует в базе",
+            #     "handler": None,
+            #     "next_step": None
+            # }
+        }
+    },
+
     "registration": {
         "first_step": "step1",
         "steps": {
@@ -62,6 +89,59 @@ SCENARIOS = {
             }
         }
     },
+
+    "airfly": {
+        "first_step": "step1",
+        "steps": {
+            "step1": {
+                "text": "Чтобы приобрести билет, введите полностью ФИО. Также, если вы знаете как со мной обращаться, "
+                        "можете ввести все нужные данные через запятую",
+                "failure_text": "Имя должно состоять из 3-30 букв и дефиса. Попробуйте еще раз",
+                "handler": "handle_name",
+                "next_step": "step2"
+            },
+            "step2": {
+                "text": "Введите место отправления",
+                "failure_text": "Имя должно состоять из 3-30 букв и дефиса. Попробуйте еще раз",
+                "keyboard": "handle_departure_point",
+                "handler": "add_landing",
+                "next_step": "step3"
+            },
+            "step3": {
+                "text": "Введите место прибытия",
+                "failure_text": "Имя должно состоять из 3-30 букв и дефиса. Попробуйте еще раз",
+                "keyboard": "handle_destination_point",
+                "handler": "add_direction",
+                "next_step": "step4"
+            },
+            "step4": {
+                "text": "Введите дату полёта",  # TODO: сделать вывод с помощью календаря?
+                "failure_text": "Имя должно состоять из 3-30 букв и дефиса. Попробуйте еще раз",
+                "handler": "handle_date",
+                "next_step": "step5"
+            },
+            "step5": {
+                "text": "Введите email/номер телефона. В случае изменения расписания мы вас оповестим.",
+                "failure_text": "Во введенном адресе ошибка. Попробуйте еще раз",
+                "handler": "handle_email",
+                "next_step": "step6"
+            },
+            "step6": {
+                "text": "Проверьте указанные данные.",
+                "failure_text": "Ну давайте сначала :)",
+                "handler": "check_data",
+                "next_step": "step7"
+            },
+            "step7": {
+                "text": "Спасибо за регистрацию, {name}! Мы отправили на {email} билет, распечатайте его.",
+                "image": "generate_ticket_air",
+                "failure_text": None,
+                "handler": None,
+                "next_step": None
+            }
+        }
+    },
+
     "coffee": {
         "first_step": "step1",
         "steps": {

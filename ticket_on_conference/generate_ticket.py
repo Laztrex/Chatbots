@@ -13,7 +13,7 @@ AVATAR_SIZE = 100
 AVATAR_OFFSET = (100, 200)
 
 
-def generate_ticket(name,  email):
+def generate_ticket(name,  email, flag='conference'):
     base = Image.open(TEMPLATE_PATH).convert("RGBA")
     font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
