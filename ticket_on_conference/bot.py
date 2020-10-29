@@ -131,7 +131,7 @@ class VkBot:
         if 'keyboard' in step:
             handler = getattr(handlers, step['keyboard'])
             keyboard = handler(step, self.pay)
-            self.send_text('Выбери напиток', user_id, keyboard_active=keyboard)
+            self.send_text('Откройте меню', user_id, keyboard_active=keyboard)
             self.pay = VkKeyboard(one_time=True)
 
     def start_scenario(self, user_id, scenario_name, text):
@@ -146,21 +146,26 @@ class VkBot:
         steps = settings.SCENARIOS[state.scenario_name]['steps']
         step = steps[state.step_name]
 
+        # -----
+        # step2 problems. need method handle for db
         if state.scenario_name == 'registration' and state.step_name == 'step2':
             for i in Registration.select():
                 if text == i.email:
                     text_to_send = step['failure_text2'].format(**state.context)
                     self.send_text(text_to_send, user_id)
                     return
+
+        elif state.scenario_name == 'coffee' and state.step_name == 'step2':
+            res = BonusCardCoffee.select(lambda x: x.count < 10 and x.email_card == text)
+            if res:
+                for user in res:
+                    user.count += 1
+                    self.send_text('Да, сегодня ещё есть бесплатный кофе', user_id)
+                    step = steps[step['next_step']]
+                    break
             else:
-                for users_db in BonusCardCoffee.select(lambda x: x.count < 10):
-                    if text == users_db.email_card:
-                        users_db.count += 1
-                        self.send_text('Да, сегодня ещё есть бесплатный кофе', user_id)
-                        step = steps[step['next_step']]
-                        break
-                else:
-                    self.send_text(step['failure_text'], user_id)
+                self.send_text(step['failure_text'], user_id)
+        # -----
 
         handler = getattr(handlers, step['handler'])
 
@@ -173,30 +178,38 @@ class VkBot:
                 # switch to next step
                 state.step_name = step['next_step']
             else:
-                # finish scenario
-                if state.scenario_name == 'coffee':
-                    log.info('Выдан кофе')
-                    # TODO: добавить в бд для бонусов и подсчета выпитого кофе (в день не больше трех, например)
-                    self.pay.get_empty_keyboard()
-                    state.delete()
-                elif state.scenario_name == 'registration':
-                    log.info('Зарегистрирован: {name} {email}'.format(**state.context))
-                    Registration(name=state.context['name'], email=state.context['email'])
-                    BonusCardCoffee(email_card=state.context['email'], count=0)
-                    state.delete()
-                elif state.scenario_name == 'airfly':
-                    log.info('Зарегистрирован на полёт: {name} {email}. Рейс: {landing}-{direction}, {date}'
-                             .format(**state.context))
-                    RegistrationAirline(name=state.context['name'], email=state.context['email'],
-                                        landing=state.context['landing'], direction=state.context['direction'],
-                                        date=state.context['date'])
-                    state.delete()
-                else:
-                    state.delete()
+                self.finish_scenario(state)
         else:
             # retry current step
             text_to_send = step['failure_text'].format(**state.context)
             self.send_text(text_to_send, user_id)
+
+    def finish_scenario(self, state):
+        """
+        Завершение текущего сценария
+        :param state: состояние текущей процедуры
+        :type state: models.UserState
+        :return: None
+        """
+        if state.scenario_name == 'coffee':
+            log.info('Выдан кофе')
+            # TODO: добавить в бд для бонусов и подсчета выпитого кофе (в день не больше трех, например)
+            self.pay.get_empty_keyboard()
+            state.delete()
+        elif state.scenario_name == 'registration':
+            log.info('Зарегистрирован: {name} {email}'.format(**state.context))
+            Registration(name=state.context['name'], email=state.context['email'])
+            BonusCardCoffee(email_card=state.context['email'], count=0)
+            state.delete()
+        elif state.scenario_name == 'airfly':
+            log.info('Зарегистрирован на полёт: {name} {email}. Рейс: {landing}-{direction}, {date}'
+                     .format(**state.context))
+            RegistrationAirline(name=state.context['name'], email=state.context['email'],
+                                landing=state.context['landing'], direction=state.context['direction'],
+                                date=state.context['date'])
+            state.delete()
+        else:
+            state.delete()
 
 
 if __name__ == "__main__":

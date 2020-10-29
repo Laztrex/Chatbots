@@ -65,7 +65,7 @@ def view_keyboard(text, context):
         for num, drink in enumerate(text['drinks'].items()):
             if num == 4:
                 context.add_line()
-            context.add_button(f'{drink[0]}', color=VkKeyboardColor.DEFAULT)
+            context.add_button(f'{drink[0]}', color=VkKeyboardColor.POSITIVE)
     return context.get_keyboard()
 
 
