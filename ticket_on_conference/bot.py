@@ -81,7 +81,7 @@ class VkBot:
         text = event.object.text
         state = UserState.get(user_id=str(user_id))
 
-        if event.object.get('geo'):
+        if event.object.get('geo'):  # TODO
             text = event.object.get('geo')['place']['title']
 
         if state is not None and state.scenario_name != 'welcome':
@@ -97,6 +97,7 @@ class VkBot:
                         self.start_scenario(user_id, intent['scenario'], text)
                     break
             else:
+                # TODO: анализировать текст ML
                 self.send_text(settings.DEFAULT_ANSWER, user_id)
 
     def send_text(self, text_to_send, user_id, keyboard_active=None):
@@ -131,7 +132,7 @@ class VkBot:
         if 'keyboard' in step:
             handler = getattr(handlers, step['keyboard'])
             keyboard = handler(step, self.pay)
-            self.send_text('Откройте меню', user_id, keyboard_active=keyboard)
+            self.send_text(step["keyboard_message"], user_id, keyboard_active=keyboard)
             self.pay = VkKeyboard(one_time=True)
 
     def start_scenario(self, user_id, scenario_name, text):

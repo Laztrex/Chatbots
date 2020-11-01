@@ -29,13 +29,19 @@ class RegistrationAirline(db.Entity):
     email = Required(str, unique=True)
     landing = Required(str)
     direction = Required(str)
-    date = Optional(str)  # TODO
+    date = Required(datetime.date)  # TODO
 
 
 class BonusCardCoffee(db.Entity):
     id = PrimaryKey(int, auto=True)
     email_card = Required(str, unique=True)
     count = Optional(int)
+
+
+class Coffee(db.Entity):
+    id = PrimaryKey(int, auto=True)
+    name = Required(str)
+    # ingredients_qty
 
 
 db.generate_mapping(create_tables=True)

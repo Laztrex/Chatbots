@@ -1,5 +1,5 @@
 GROUP_ID = 187930812
-TOKEN = "24228dc48b25134e761af709d6a29f7149c34012fe825a6fe00332123f81a773c0ee9fc60d1bd23dd0247"
+TOKEN = ""
 
 INTENTS = [
     {
@@ -7,7 +7,6 @@ INTENTS = [
         "tokens": {"прив", "здрав", "hello", "привет"},
         "scenario": "welcome",
         "answer": None
-
     },
     {
         "name": "Дата рождения",
@@ -41,25 +40,28 @@ INTENTS = [
     }
 ]
 
+
+DRINKS = {'AMERICANO': 80, 'ESPRESSO': 20,
+          'MACCHIATO': 90, 'CHOCOLATE': 110,
+          'CAPPUCCINO': 70, 'LATTE': 65}
+
+DEFAULT_ANSWER = "Не знаю как на это ответить. " \
+                 "Но могу сказать когда и где пройдет конференция, а также зарегистрировать вас. Просто спросите"
+
+
 SCENARIOS = {
 
     "welcome": {
         "first_step": "step1",
         "steps": {
             "step1": {
-                "text": "Выбирай!",
+                "text": "Привет, дорогой!",
                 "failure_text": "Эмм...",
                 "handler": None,
                 "keyboard": "keyboard_welcome",
+                "keyboard_message": "Выбирай!",
                 "next_step": None
             },
-            # "step2": {
-            #     "text": "AAA",
-            #     "failure_text": "Во введенном адресе ошибка. Попробуйте еще раз",
-            #     "failure_text2": "Такой email уже существует в базе",
-            #     "handler": None,
-            #     "next_step": None
-            # }
         }
     },
 
@@ -104,14 +106,16 @@ SCENARIOS = {
                 "text": "Введите место отправления",
                 "failure_text": "Имя должно состоять из 3-30 букв и дефиса. Попробуйте еще раз",
                 "keyboard": "handle_departure_point",
-                "handler": "add_landing",
+                "keyboard_message": "Напишите в формате 'Страна, город' или укажите геопозицию",
+                "handler": "handle_landing",
                 "next_step": "step3"
             },
             "step3": {
                 "text": "Введите место прибытия",
                 "failure_text": "Имя должно состоять из 3-30 букв и дефиса. Попробуйте еще раз",
                 "keyboard": "handle_destination_point",
-                "handler": "add_direction",
+                "keyboard_message": "Напишите в формате 'Страна, город' или укажите геопозицию",
+                "handler": "handle_direction",
                 "next_step": "step4"
             },
             "step4": {
@@ -146,15 +150,20 @@ SCENARIOS = {
         "first_step": "step1",
         "steps": {
             "step1": {
-                "text": "Нажмите кнопку выбранного напитка",
+                "text": "Откройте меню",
                 "image": "generate_menu_coffee",
                 "keyboard": "view_keyboard",
-                "drinks": {1: 80, 2: 60, 3: 20, 4: 50,
-                           5: 90, 6: 110, 7: 70, 8: 65},
-                "failure_text": None,
+                "keyboard_message": "Нажмите кнопку выбранного напитка",
+                "drinks": DRINKS,
+                "failure_text": "Выберите напиток из меню",
                 "handler": "handle_coffee",
                 "next_step": "step2"
             },
+            # "step2": {
+            #     "handler": "check_choice_coffee",
+            #     "failure_text": "Выберите напиток из меню",
+            #     "next_step": "step3"
+            # },
             "step2": {
                 "text": "Так, давайте проверим вашу бонусную карту...",
                 "failure_text": 'Вас нет в базе:( Зарегистрируйтесь на конференцию и будет бесплатный кофе!',
@@ -165,7 +174,7 @@ SCENARIOS = {
                 "text": "Проведите платёж",
                 "pay": "pay_coffee",
                 "failure_text": "Недостаточно средств",
-                "handler": "handle_coffee",
+                "handler": "pay_coffee",
                 "next_step": "step4"
             },
             "step4": {
@@ -179,8 +188,6 @@ SCENARIOS = {
     }
 }
 
-DEFAULT_ANSWER = "Не знаю как на это ответить. " \
-                 "Но могу сказать когда и где пройдет конференция, а также зарегистрировать вас. Просто спросите"
 
 DB_CONFIG = dict(
     provider='sqlite', filename='vk_chat_bot.db', create_db=True

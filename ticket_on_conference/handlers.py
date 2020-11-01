@@ -4,15 +4,19 @@ Handler - функция, которая принимает на вход text (
 True если шаг пройден, False если данные введены неправильно.
 """
 import datetime
+import json
 import re
 from io import BytesIO
-import pandas as pd
+# import pandas as pd
+from dateutil.parser import parse
 from PIL import Image, ImageDraw, ImageFont
 from vk_api.keyboard import VkKeyboardColor
-
+from geopy.geocoders import Nominatim
 from generate_ticket import generate_ticket
 from generate_ticket_air import generate_ticket as ticket_air
 from generate_menu_coffee import generate_menu
+
+from settings import DRINKS
 
 re_name = re.compile(r'^[\w\-\s]{3,40}$')
 re_email = re.compile(r'(\b[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)+\b')
@@ -63,7 +67,7 @@ def generate_menu_coffee(text, context):
 def view_keyboard(text, context):
     if not context.keyboard['buttons'][0]:
         for num, drink in enumerate(text['drinks'].items()):
-            if num == 4:
+            if num == 3:
                 context.add_line()
             context.add_button(f'{drink[0]}', color=VkKeyboardColor.POSITIVE)
     return context.get_keyboard()
@@ -74,6 +78,14 @@ def handle_welcome(text, context):
 
 
 def handle_coffee(text, context):
+    choices_drink = text.upper()
+    if choices_drink in DRINKS:
+        context['coffee'] = (choices_drink, int(DRINKS.get(choices_drink)))
+        return True
+    return False
+
+
+def check_choice_coffee(text, context):
     return True
 
 
@@ -82,7 +94,10 @@ def check_bonus_card(text, context):
 
 
 def pay_coffee(text, context):
-    return True
+    money = int(text) - context['coffee'][1]
+    if money >= 0:
+        return True
+    return False
 
 
 def handle_departure_point(text, context):
@@ -101,8 +116,16 @@ def handle_date(text, context):
     :param context:
     :return: False - failure_text; True - обработано ок
     """
-    write_future_context = analyze_date(text)
-    context["date"] = text
+    try:
+        parsed_data = parse(text, dayfirst=True).strftime("%d.%m.%Y")
+    except Exception:
+        # TODO: написать доп.метод обработки (анализа)
+        res = analyze_date(text)
+        if res:
+            parsed_data = res
+        else:
+            raise Exception("Incorrect format date")
+    context["date"] = parsed_data
     return True
 
 
@@ -113,7 +136,7 @@ def check_data(text, context):
 
 
 def generate_img_coffee(text, context):
-    base = Image.open('files/drinks/latte.jpg').convert("RGBA")
+    base = Image.open(f'files/drinks/{context["coffee"][0]}.jpg').convert("RGBA")
 
     temp_file = BytesIO()
     base.save(temp_file, 'png')
@@ -132,15 +155,27 @@ def generate_ticket_air(text, context):
 #                 context)):
 #         handler(unit[text[idx]])
 
+def location_find(target):
+    geolocation = Nominatim(user_agent="chat-bot vk")
+    location = geolocation.geocode(target)
+    if location:
+        return location.address
 
-def add_landing(text, context):
-    context["landing"] = text
-    return True
+
+def handle_landing(text, context):
+    check_landing = location_find(text)
+    if check_landing:
+        context["landing"] = check_landing
+        return True
+    return False
 
 
-def add_direction(text, context):
-    context["direction"] = text
-    return True
+def handle_direction(text, context):
+    check_landing = location_find(text)
+    if check_landing:
+        context["direction"] = check_landing
+        return True
+    return False
 
 
 def analyze_date(strange_date):
@@ -150,15 +185,16 @@ def analyze_date(strange_date):
     :param strange_date:
     :return:
     """
-    curr_year = datetime.datetime.now().date().year
-    # pattern = r'(?:0?[1-9]|[12][0-9]|3[01]).(?:0?[1-9]|1[0-2]).(?:19[0-9][0-9]|20[01][0-9])'
-    try:
-        parsed_dates = pd.to_datetime(strange_date).date()
-    except Exception:
-        return False
-    print(parsed_dates)
-    print(type(parsed_dates))
-    return parsed_dates
+    # curr_year = datetime.datetime.now().date().year
+    # # pattern = r'(?:0?[1-9]|[12][0-9]|3[01]).(?:0?[1-9]|1[0-2]).(?:19[0-9][0-9]|20[01][0-9])'
+    # try:
+    #     parsed_dates = pd.to_datetime(strange_date).date()
+    # except Exception:
+    #     return False
+    # print(parsed_dates)
+    # print(type(parsed_dates))
+    # return parsed_dates
+    pass
 
 
 def analyze_point(city):

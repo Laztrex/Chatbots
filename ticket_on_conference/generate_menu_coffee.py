@@ -1,6 +1,7 @@
 from io import BytesIO
-
 from PIL import Image
+
+from models import Coffee
 
 TEMPLATE_PATH = 'files/menu_coffee.jpg'
 FONT_PATH = 'files/Roboto-Regular.ttf'
