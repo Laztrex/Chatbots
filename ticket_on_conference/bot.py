@@ -3,6 +3,9 @@ import datetime
 import json
 import random
 import logging
+from simple_spelling_correct import SpellingCorrect
+import re
+from collections import Counter
 
 import requests
 from pony.orm import db_session
@@ -88,17 +91,26 @@ class VkBot:
             self.continue_scenario(text, state, user_id)
         else:
             # search intent
-            for intent in settings.INTENTS:
-                log.debug(f'User gets {intent}')
-                if any(token in text.lower() for token in intent['tokens']):
-                    if intent['answer']:
-                        self.send_text(intent['answer'], user_id)
-                    else:
-                        self.start_scenario(user_id, intent['scenario'], text)
-                    break
-            else:
+            if self.check_token(text, user_id):
                 # TODO: анализировать текст ML
-                self.send_text(settings.DEFAULT_ANSWER, user_id)
+                spelling_text = SpellingCorrect(settings.TEXT_TEST)
+                ans = spelling_text.correct_text(text.lower())
+                if ans:
+                    self.check_token(ans, user_id)
+                else:
+                    self.send_text(settings.DEFAULT_ANSWER, user_id)
+
+    def check_token(self, text, user_id):
+        for intent in settings.INTENTS:
+            log.debug(f'User gets {intent}')
+            if any(token in text.lower() for token in intent['tokens']):
+                if intent['answer']:
+                    self.send_text(intent['answer'], user_id)
+                else:
+                    self.start_scenario(user_id, intent['scenario'], text)
+                break
+        else:
+            return True
 
     def send_text(self, text_to_send, user_id, keyboard_active=None):
         self.api.messages.send(
