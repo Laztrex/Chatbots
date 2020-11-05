@@ -4,16 +4,16 @@ import datetime
 
 class TicketMaker:
     def __init__(self, name, connect=None, landing='Москва', direction='Минск',
-                 date_reg='26.10.20', time_landing=None, time_direction=None,
+                 date_reg='26.10.20', date_landing=None, date_direction=None,
                  model_plane=None, place_passenger=None, row_place=None):
         self.name_passenger = [(45, 120), name]
         self.landing = [(45, 190), landing]
         self.direction = [(45, 255), direction]
         self.date = [(280, 255), date_reg]
         self.time_landing = [(420, 265), datetime.datetime.strftime(
-            datetime.datetime.strptime(time_landing, "%d.%m.%Y %H:%M:%S"), "%H:%M")]
+            datetime.datetime.strptime(date_landing, "%d.%m.%Y %H:%M:%S"), "%H:%M")]
         self.time_direction = [(420, 335), datetime.datetime.strftime(
-            datetime.datetime.strptime(time_direction, "%d.%m.%Y %H:%M:%S"), "%H:%M")]
+            datetime.datetime.strptime(date_direction, "%d.%m.%Y %H:%M:%S"), "%H:%M")]
         self.drawing = [self.name_passenger, self.landing, self.direction,
                         self.date, self.time_landing, self.time_direction]
         self.font_path = 'files/Roboto-Regular.ttf'

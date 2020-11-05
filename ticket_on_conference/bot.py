@@ -223,8 +223,8 @@ class VkBot:
                      .format(**state.context))
             RegistrationAirline(name=state.context['name'], connect=state.context['connect'],
                                 landing=state.context['landing'], direction=state.context['direction'],
-                                date_reg=state.context['date_reg'], time_landing=state.context['time_landing'],
-                                time_direction=state.context["time_direction"])
+                                date_reg=state.context['date_reg'], date_landing=state.context['date_landing'],
+                                date_direction=state.context["date_direction"])
             state.delete()
         else:
             state.delete()

@@ -8,6 +8,7 @@ from copy import deepcopy
 
 from bot import VkBot
 from generate_ticket import generate_ticket
+from simple_spelling_correct import SpellingCorrect
 
 
 def isolate_db(test_func):
@@ -86,6 +87,8 @@ class Test1(TestCase):
         settings.SCENARIOS['coffee']['steps']['step4']['text'],
     ]
 
+    STRANGER_WORDS = ['прЫвет', 'кофей', 'самалот']
+
     def test_run(self):
         count = 5
         obj = {}
@@ -146,12 +149,19 @@ class Test1(TestCase):
         assert ticket_file.read() == expected_bytes
 
     def test_image_airline_gen(self):
-        pass
-
-    def test_image_coffee_gen(self):
-        pass
+        with open('files/airplane_ticket_example.png', 'rb') as airplane_ticket:
+            ticket_file = generate_ticket({'name': 'крук', 'landing': 'Бельгия, Гент',
+                                           'direction': 'Россия, Рязань',
+                                           'date_reg': '05.11.2020',
+                                           'date_landing': '05.11.2020 04:00:00',
+                                           'date_direction': '05.11.2020 11:30:00'}, flag='airplane')
+            airplane_ticket_bytes = airplane_ticket.read()
+        assert ticket_file.read() == airplane_ticket_bytes
 
     def test_spelling_words(self):
-        pass
+        test_spelling = SpellingCorrect(settings.TEXT_TEST)
+        for strange_word in self.STRANGER_WORDS:
+            self.assertIn(test_spelling.correct_text(strange_word),
+                          ['привет', 'самолёт', 'кофе', 'регистрация, конференция'])
 
 

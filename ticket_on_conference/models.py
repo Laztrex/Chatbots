@@ -30,8 +30,8 @@ class RegistrationAirline(db.Entity):
     landing = Required(str)
     direction = Required(str)
     date_reg = Required(str)  # TODO
-    time_landing = Required(str)
-    time_direction = Required(str)
+    date_landing = Required(str)
+    date_direction = Required(str)
 
 
 class BonusCardCoffee(db.Entity):

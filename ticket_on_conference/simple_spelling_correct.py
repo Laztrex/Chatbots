@@ -64,9 +64,9 @@ class SpellingCorrect:
                 str.title if text.istitle() else
                 str)
 
-    def similarity(self, s1, a):
-        for i in a:
-            normalized1 = s1.lower()
-            if difflib.SequenceMatcher(None, normalized1, i).ratio() > 0.65:
-                return i
+    def similarity(self, candidate, keys):
+        for find_key in keys:
+            normalized1 = candidate.lower()
+            if difflib.SequenceMatcher(None, normalized1, find_key).ratio() > 0.65:
+                return find_key
 

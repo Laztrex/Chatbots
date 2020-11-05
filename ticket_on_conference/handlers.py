@@ -15,8 +15,6 @@ from PIL import Image, ImageDraw, ImageFont
 from vk_api.keyboard import VkKeyboardColor
 from geopy.geocoders import Nominatim
 from generate_ticket import generate_ticket
-from models import BonusCardCoffee
-
 from settings import DRINKS
 
 re_name = re.compile(r'^[\w\-\s]{3,40}$')
@@ -136,10 +134,11 @@ def handle_date(text, context):
         # else:
         # raise Exception("Incorrect format date")  # TODO: log
         return False
-    context["date_reg"] = parsed_data.strftime('%d.%m.%Y')
+
+    context["date_reg"] = datetime.now().date().strftime('%d.%m.%Y')
     curr = datetime.combine(parsed_data, datetime.utcnow().time(), tzinfo=timezone.utc).astimezone()
-    context["time_landing"] = curr.strftime('%d.%m.%Y %H:%M:%S')
-    context["time_direction"] = (curr + timedelta(hours=7, minutes=30)).strftime('%d.%m.%Y %H:%M:%S')
+    context["date_landing"] = curr.strftime('%d.%m.%Y %H:%M:%S')
+    context["date_direction"] = (curr + timedelta(hours=7, minutes=30)).strftime('%d.%m.%Y %H:%M:%S')
     return True
 
 
