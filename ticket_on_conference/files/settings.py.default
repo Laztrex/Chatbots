@@ -1,6 +1,15 @@
 GROUP_ID = 187930812
 TOKEN = ""
 
+
+DRINKS = {'AMERICANO': 80, 'ESPRESSO': 50,
+          'MACCHIATO': 90, 'CHOCOLATE': 110,
+          'CAPPUCCINO': 70, 'LATTE': 80}
+
+DEFAULT_ANSWER = "Не знаю как на это ответить. " \
+                 "Но могу сказать когда и где пройдет конференция, а также зарегистрировать вас. Просто спросите"
+
+
 INTENTS = [
     {
         "name": "Приветствие",
@@ -29,7 +38,7 @@ INTENTS = [
     {
         "name": "Билет на самолёт",
         "tokens": {"билет", "самолёт", "вжух"},
-        "scenario": "airfly",
+        "scenario": "airplane",
         "answer": None
     },
     {
@@ -39,14 +48,6 @@ INTENTS = [
         "answer": None
     }
 ]
-
-
-DRINKS = {'AMERICANO': 80, 'ESPRESSO': 20,
-          'MACCHIATO': 90, 'CHOCOLATE': 110,
-          'CAPPUCCINO': 70, 'LATTE': 65}
-
-DEFAULT_ANSWER = "Не знаю как на это ответить. " \
-                 "Но могу сказать когда и где пройдет конференция, а также зарегистрировать вас. Просто спросите"
 
 
 SCENARIOS = {
@@ -92,7 +93,7 @@ SCENARIOS = {
         }
     },
 
-    "airfly": {
+    "airplane": {
         "first_step": "step1",
         "steps": {
             "step1": {
@@ -103,7 +104,8 @@ SCENARIOS = {
                 "next_step": "step2"
             },
             "step2": {
-                "text": "Введите место отправления",
+                "text": "Укажите через форму место отправления или напишите. "
+                        "\n'Формат ввода: 'Страна, город'",
                 "failure_text": "Имя должно состоять из 3-30 букв и дефиса. Попробуйте еще раз",
                 "keyboard": "handle_departure_point",
                 "keyboard_message": "Напишите в формате 'Страна, город' или укажите геопозицию",
@@ -111,33 +113,28 @@ SCENARIOS = {
                 "next_step": "step3"
             },
             "step3": {
-                "text": "Введите место прибытия",
-                "failure_text": "Имя должно состоять из 3-30 букв и дефиса. Попробуйте еще раз",
+                "text": "Укажите через форму место прибытия или напишите. "
+                        "\n'Формат ввода: 'Страна, город'",
+                "failure_text": "Ошибка ввода. Попробуйте ещё раз",
                 "keyboard": "handle_destination_point",
                 "keyboard_message": "Напишите в формате 'Страна, город' или укажите геопозицию",
                 "handler": "handle_direction",
                 "next_step": "step4"
             },
             "step4": {
-                "text": "Введите дату полёта",  # TODO: сделать вывод с помощью календаря?
-                "failure_text": "Имя должно состоять из 3-30 букв и дефиса. Попробуйте еще раз",
+                "text": "Введите дату полёта. Формат даты: ДД:ММ:ГГГГ",  # TODO: сделать вывод с помощью календаря?
+                "failure_text": "Формат даты некорректен",
                 "handler": "handle_date",
                 "next_step": "step5"
             },
             "step5": {
                 "text": "Введите email/номер телефона. В случае изменения расписания мы вас оповестим.",
-                "failure_text": "Во введенном адресе ошибка. Попробуйте еще раз",
-                "handler": "handle_email",
+                "failure_text": "Ошибка ввода формата email/номер телефона. Попробуйте еще раз",
+                "handler": "handle_connection",
                 "next_step": "step6"
             },
             "step6": {
-                "text": "Проверьте указанные данные.",
-                "failure_text": "Ну давайте сначала :)",
-                "handler": "check_data",
-                "next_step": "step7"
-            },
-            "step7": {
-                "text": "Спасибо за регистрацию, {name}! Мы отправили на {email} билет, распечатайте его.",
+                "text": "Спасибо за регистрацию, {name}! Мы отправили на {connect} билет, распечатайте его.",
                 "image": "generate_ticket_air",
                 "failure_text": None,
                 "handler": None,
@@ -159,11 +156,6 @@ SCENARIOS = {
                 "handler": "handle_coffee",
                 "next_step": "step2"
             },
-            # "step2": {
-            #     "handler": "check_choice_coffee",
-            #     "failure_text": "Выберите напиток из меню",
-            #     "next_step": "step3"
-            # },
             "step2": {
                 "text": "Так, давайте проверим вашу бонусную карту...",
                 "failure_text": 'Вас нет в базе:( Зарегистрируйтесь на конференцию и будет бесплатный кофе!',
