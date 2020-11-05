@@ -1,26 +1,22 @@
 #!/usr/bin/env python3
-import datetime
-import json
-import random
 import logging
-from simple_spelling_correct import SpellingCorrect
-import re
-from collections import Counter
-
+import random
 import requests
+
+import vk_api
 from pony.orm import db_session
 from vk_api.keyboard import VkKeyboard
+from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 
 import handlers
 from models import UserState, Registration, BonusCardCoffee, RegistrationAirline
+from simple_spelling_correct import SpellingCorrect
 
 try:
     import settings
 except ImportError:
     exit('Do cp settings.py.default settings.py and set token!')
 
-import vk_api
-from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 
 log = logging.getLogger('bot')
 
@@ -72,7 +68,11 @@ class VkBot:
 
     @db_session
     def on_event(self, event):
-        """Отправляет сообщение назад, если оно текстовое"""
+        """
+        Обработка текстового сообщения.
+        :param event: событие VkBotLongPoll
+        :return: None, если событие неизвестно
+        """
         if event.type != VkBotEventType.MESSAGE_NEW:
             if event.type == VkBotEventType.MESSAGE_EVENT:
                 print(event)
@@ -91,7 +91,7 @@ class VkBot:
             self.continue_scenario(text, state, user_id)
         else:
             # search intent
-            if self.check_token(text, user_id):
+            if self.check_token(text, user_id) is False:
                 spelling_text = SpellingCorrect(settings.TEXT_TEST)
                 ans = spelling_text.correct_text(text.lower())
                 if ans:
@@ -100,6 +100,12 @@ class VkBot:
                     self.send_text(settings.DEFAULT_ANSWER, user_id)
 
     def check_token(self, text, user_id):
+        """
+        Проверка ключевого слова для старта сценария
+        :param text: ответ пользователя
+        :param user_id: id пользователя
+        :return: False, если старт не задан
+        """
         for intent in settings.INTENTS:
             log.debug(f'User gets {intent}')
             if any(token in text.lower() for token in intent['tokens']):
@@ -109,9 +115,16 @@ class VkBot:
                     self.start_scenario(user_id, intent['scenario'], text)
                 break
         else:
-            return True
+            return False
 
     def send_text(self, text_to_send, user_id, keyboard_active=None):
+        """
+        Отправка сообщения
+        :param text_to_send: Текст сообщения
+        :param user_id: id пользователя
+        :param keyboard_active: активация клавиатуры
+        :return: None
+        """
         self.api.messages.send(
             message=text_to_send,
             random_id=random.randint(0, 2 ** 20),
@@ -120,6 +133,12 @@ class VkBot:
         )
 
     def send_image(self, image, user_id):
+        """
+        Отправка изображения
+        :param image: io изображения
+        :param user_id: id пользователя
+        :return: None
+        """
         upload_url = self.api.photos.getMessagesUploadServer()['upload_url']
         upload_data = requests.post(url=upload_url, files={'photo': ('image.png', image, 'image/png')}).json()
         image_data = self.api.photos.saveMessagesPhoto(**upload_data)
@@ -134,6 +153,15 @@ class VkBot:
         )
 
     def send_step(self, step, user_id, text, context):
+        """
+        Обработка контекста в зависимости от действия по сценарию
+        :param step: шаг сценария
+        :param user_id: id пользователя
+        :param text: текст сообщения
+        :param context: контекст текущего события
+        :type context: dict
+        :return: None
+        """
         if 'text' in step:
             self.send_text(step['text'].format(**context), user_id)
         if 'image' in step:
@@ -147,6 +175,13 @@ class VkBot:
             self.pay = VkKeyboard(one_time=True)
 
     def start_scenario(self, user_id, scenario_name, text):
+        """
+        Старт сценария
+        :param user_id: id пользователя
+        :param scenario_name: имя текущего сценария
+        :param text: сообщение от пользователя
+        :return: None
+        """
         scenario = settings.SCENARIOS[scenario_name]
         first_step = scenario['first_step']
         step = scenario['steps'][first_step]
@@ -155,6 +190,16 @@ class VkBot:
             UserState(user_id=str(user_id), scenario_name=scenario_name, step_name=first_step, context={})
 
     def db_info(self, state, step, user_id, text):
+        """
+        Манипуляция с базой данных
+        :param state: Текущее контекст (хранит последнее действие от пользователя)
+        :param step: текущий шаг
+        :param user_id: id пользователя
+        :param text: текст от пользователя
+        :return: False, если в сценарии 'registration' найдено совпадения по зарегистрированному email;
+                continue - в сценарии 'coffee' найден пользователь;
+                True - нет подходящего сценария
+        """
         if state.scenario_name == 'registration':
             for i in Registration.select():
                 if text == i.email:
@@ -175,6 +220,13 @@ class VkBot:
             return True
 
     def continue_scenario(self, text, state, user_id):
+        """
+        Продолжение обработки сценария
+        :param text: сообщение от пользователя
+        :param state: Текущее контекст (хранит последнее действие от пользователя)
+        :param user_id: id пользователя
+        :return: None
+        """
         steps = settings.SCENARIOS[state.scenario_name]['steps']
         step = steps[state.step_name]
 

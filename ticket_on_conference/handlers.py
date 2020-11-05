@@ -22,7 +22,13 @@ re_email = re.compile(r'(\b[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)+\b')
 re_phone = re.compile(r'\+?\d[\( -]?\d{3}[\) -]?\d{3}[ -]?\d{2}[ -]?\d{2}')
 
 
-def keyboard_welcome(text, context):
+def keyboard_welcome(step, context):
+    """
+    Создание клавиатуры с выбором действий
+    :param step: шаг сценария (not used)
+    :param context: контекст текущего события
+    :return: json клавиатуры
+    """
     context.add_callback_button(label='Зарегистрироваться', color=VkKeyboardColor.SECONDARY,
                                 payload={"type": "show_snackbar", "text": "Ну поехали"})
 
@@ -38,11 +44,32 @@ def keyboard_welcome(text, context):
     return context.get_keyboard()
 
 
+def view_keyboard(step, context):
+    """
+    Создание клавиатуры с выбором действий (выбор напитка). Для сценария "coffee" (кофейный автомат).
+    :param step: шаг сценария
+    :param context: контекст текущего события
+    :return: json клавиатуры
+    """
+    if not context.keyboard['buttons'][0]:
+        for num, drink in enumerate(step['drinks'].items()):
+            if num == 3:
+                context.add_line()
+            context.add_button(f'{drink[0]}', color=VkKeyboardColor.POSITIVE)
+    return context.get_keyboard()
+
+
 def check_bonus_card(text, context):
     return True
 
 
 def handle_name(text, context):
+    """
+    Валидации имени пользователя
+    :param text: сообщение от пользователя
+    :param context: контекст текущего события
+    :return: True - валидация пройдена; False - в противном случае
+    """
     match = re.match(re_name, text)
     if match:
         context['name'] = text
@@ -52,6 +79,12 @@ def handle_name(text, context):
 
 
 def handle_email(text, context):
+    """
+    Валидация email
+    :param text: сообщение от пользователя
+    :param context: контекст текущего события
+    :return: True - валидация пройдена; False - в противном случае
+    """
     matches = re.findall(re_email, text)
     if len(matches) > 0:
         context['email'] = matches[0]
@@ -61,6 +94,12 @@ def handle_email(text, context):
 
 
 def handle_connection(text, context):
+    """
+    Валидация email/номера телефона. Для сценария "airplane (билет на самолёт)"
+    :param text: сообщение от пользователя
+    :param context: контекст текущего события
+    :return: True - валидация пройдена; False - в противном случае
+    """
     matches = re.findall(re_email, text)
     if len(matches) > 0:
         context['connect'] = matches[0]
@@ -73,27 +112,42 @@ def handle_connection(text, context):
 
 
 def generate_ticket_handle(text, context):
+    """
+    Создание изображения билета на конференцию. Для сценария "conference (билет на конференцию)
+    :param text: сообщение от пользователя (not used)
+    :param context: контекст текущего события
+    :return: IOBytes изображения
+    """
     return generate_ticket(context)
 
 
 def generate_menu_coffee(text, context):
+    """
+    Создание изображения меню кофе. Для сценария "coffee (кофейный автомат)
+    :param text: сообщение от пользователя (not used)
+    :param context: контекст текущего события
+    :return: IOBytes изображения
+    """
     return generate_ticket(context, flag='coffee_menu')
 
 
 def generate_img_coffee(text, context):
+    """
+    Вывод изображения напитка :). Для сценария "coffee (кофейный автомат)
+    :param text: сообщение от пользователя (not used)
+    :param context: контекст текущего события
+    :return: IOBytes изображения
+    """
     return generate_ticket(context, flag='drink')
 
 
-def view_keyboard(text, context):
-    if not context.keyboard['buttons'][0]:
-        for num, drink in enumerate(text['drinks'].items()):
-            if num == 3:
-                context.add_line()
-            context.add_button(f'{drink[0]}', color=VkKeyboardColor.POSITIVE)
-    return context.get_keyboard()
-
-
 def handle_coffee(text, context):
+    """
+    Проверка выбранного напитка
+    :param text: сообщение от польхователя
+    :param context: контекст текущего события
+    :return: True - валидация пройдена; False - в противном случае
+    """
     choices_drink = text.upper()
     if choices_drink in DRINKS:
         context['coffee'] = (choices_drink, int(DRINKS.get(choices_drink)))
@@ -102,6 +156,14 @@ def handle_coffee(text, context):
 
 
 def pay_coffee(text, context):
+    """
+    (В тестовом варианте реализация vkPay не выполнялась, по понятным причинам. Но можно сделать)
+    Покупка напитка.
+    Выполняется, если пользователь не зарегистрирован на конференцию (сценарий "conference") - условие бесплатного кофе
+    :param text: денежка от пользователя
+    :param context: контекст текущего события
+    :return: True - валидация пройдена; False - в противном случае
+    """
     money = int(text) - context['coffee'][1]
     if money >= 0:
         return True
@@ -109,20 +171,32 @@ def pay_coffee(text, context):
 
 
 def handle_departure_point(text, context):
+    """
+    Создание клавиатуры с геолокацией
+    :param text: сообщение от пользователя (not used)
+    :param context: контекст текущего события
+    :return: json клавиатуры
+    """
     context.add_location_button()
     return context.get_keyboard()
 
 
 def handle_destination_point(text, context):
+    """
+    Создание клавиатуры с геолокацией
+    :param text: сообщение от пользователя (not used)
+    :param context: контекст текущего события
+    :return: json клавиатуры
+    """
     context.add_location_button()
     return context.get_keyboard()
 
 
 def handle_date(text, context):
     """
-    :param text:
-    :param context:
-    :return: False - failure_text; True - обработано ок
+    :param text: сообщение от пользователя (дата)
+    :param context: контекст текущего события
+    :return: True - валидация пройдена; False - в противном случае
     """
     try:
         parsed_data = parse(text, dayfirst=True).date()
@@ -143,6 +217,12 @@ def handle_date(text, context):
 
 
 def generate_ticket_air(text, context):
+    """
+    Создание изображения билета на самолёт. Для сценария "airplane (билет на самолёт)
+    :param text: сообщение от пользователя (not used)
+    :param context: контекст текущего события
+    :return: IOBytes изображения
+    """
     return generate_ticket(context, flag='airplane')
 
 
@@ -153,6 +233,12 @@ def generate_ticket_air(text, context):
 #         handler(unit[text[idx]])
 
 def location_find(target):
+    """
+    Поиск выбранного места отправления/назначения с помощью данных OpenStreetMap.
+    Для сценария "airplane (билет на самолёт)".
+    :param target: место отправления/назначения
+    :return: str в формате "<country>, <city>"
+    """
     geolocation = Nominatim(user_agent="chat-bot vk")
     location = geolocation.geocode(target, addressdetails=True, language='ru')
     if location:
@@ -162,6 +248,12 @@ def location_find(target):
 
 
 def handle_landing(text, context):
+    """
+    Проверка выбранного места отправления. Для сценария "airplane (билет на самолёт)"
+    :param text: сообщение от пользователя
+    :param context: контекст текущего события
+    :return: True - валидация пройдена; False - в противном случае
+    """
     check_landing = location_find(text)
     if check_landing:
         context["landing"] = check_landing
@@ -170,6 +262,12 @@ def handle_landing(text, context):
 
 
 def handle_direction(text, context):
+    """
+    Проверка выбранного места назначения. Для сценария "airplane (билет на самолёт)"
+    :param text: сообщение от пользователя
+    :param context: контекст текущего события
+    :return: True - валидация пройдена; False - в противном случае
+    """
     check_landing = location_find(text)
     if check_landing:
         context["direction"] = check_landing if len(check_landing) <= 25 \

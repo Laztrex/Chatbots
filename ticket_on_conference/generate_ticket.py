@@ -1,6 +1,6 @@
-from io import BytesIO
-
 import requests
+
+from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont
 
 from generate_ticket_air import TicketMaker
@@ -18,6 +18,12 @@ TEMPLATE_PATH_COFFEE = 'files/menu_coffee.jpg'
 
 
 def generate_ticket(data, flag='conference'):
+    """
+    Сценарий отрисовки изображения
+    :param data: данные для отрисовки
+    :param flag: switch сценария
+    :return: BytesIO изображения
+    """
     if flag == 'coffee_menu':
         base = Image.open(TEMPLATE_PATH_COFFEE).convert("RGBA")
     elif flag == 'drink':
@@ -43,4 +49,3 @@ def generate_ticket(data, flag='conference'):
     temp_file.seek(0)
 
     return temp_file
-

@@ -24,6 +24,7 @@ class Registration(db.Entity):
 
 
 class RegistrationAirline(db.Entity):
+    """Заявка на билет на самолёт"""
     id = PrimaryKey(int, auto=True)
     name = Required(str)
     connect = Required(str)
@@ -35,6 +36,7 @@ class RegistrationAirline(db.Entity):
 
 
 class BonusCardCoffee(db.Entity):
+    """Лимит на получение бесплатного кофе"""
     id = PrimaryKey(int, auto=True)
     email_card = Required(str, unique=True)
     count = Optional(int)

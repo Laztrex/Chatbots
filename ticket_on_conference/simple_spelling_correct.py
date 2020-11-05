@@ -6,6 +6,9 @@ alphabet = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
 
 
 class SpellingCorrect:
+    """
+    Класс для обработки текста с ошибкой
+    """
     def __init__(self, my_text):
         self.my_dict = Counter(self.tokens(my_text))
 
@@ -51,6 +54,7 @@ class SpellingCorrect:
         return max(candidates, key=self.my_dict.get)
 
     def correct_text(self, text):
+        """Старт обработки"""
         return self.similarity(re.sub('[а-яА-ЯёЁ]+', self.correct_match, text),
                                ['привет', 'самолёт', 'кофе', 'регистрация, конференция'])
 
