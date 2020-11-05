@@ -92,7 +92,6 @@ class VkBot:
         else:
             # search intent
             if self.check_token(text, user_id):
-                # TODO: анализировать текст ML
                 spelling_text = SpellingCorrect(settings.TEXT_TEST)
                 ans = spelling_text.correct_text(text.lower())
                 if ans:
@@ -155,30 +154,36 @@ class VkBot:
         if scenario_name != 'welcome':
             UserState(user_id=str(user_id), scenario_name=scenario_name, step_name=first_step, context={})
 
-    def continue_scenario(self, text, state, user_id):
-        steps = settings.SCENARIOS[state.scenario_name]['steps']
-        step = steps[state.step_name]
-
-        # -----
-        # step2 problems. need method handle for db
-        if state.scenario_name == 'registration' and state.step_name == 'step2':
+    def db_info(self, state, step, user_id, text):
+        if state.scenario_name == 'registration':
             for i in Registration.select():
                 if text == i.email:
                     text_to_send = step['failure_text2'].format(**state.context)
                     self.send_text(text_to_send, user_id)
-                    return
+                    return False
 
-        elif state.scenario_name == 'coffee' and state.step_name == 'step2':
+        elif state.scenario_name == 'coffee':
             res = BonusCardCoffee.select(lambda x: x.count < 10 and x.email_card == text)
             if res:
                 for user in res:
                     user.count += 1
                     self.send_text('Да, сегодня ещё есть бесплатный кофе', user_id)
-                    step = steps[step['next_step']]
-                    break
+                    return 'continue'
             else:
                 self.send_text(step['failure_text'], user_id)
-        # -----
+        else:
+            return True
+
+    def continue_scenario(self, text, state, user_id):
+        steps = settings.SCENARIOS[state.scenario_name]['steps']
+        step = steps[state.step_name]
+
+        if state.step_name == 'step2':
+            ans = self.db_info(state, step, user_id, text)
+            if ans == 'continue':
+                step = steps[step['next_step']]
+            elif ans is False:
+                return
 
         handler = getattr(handlers, step['handler'])
 
@@ -206,7 +211,6 @@ class VkBot:
         """
         if state.scenario_name == 'coffee':
             log.info('Выдан кофе')
-            # TODO: добавить в бд для бонусов и подсчета выпитого кофе (в день не больше трех, например)
             self.pay.get_empty_keyboard()
             state.delete()
         elif state.scenario_name == 'registration':
@@ -214,12 +218,13 @@ class VkBot:
             Registration(name=state.context['name'], email=state.context['email'])
             BonusCardCoffee(email_card=state.context['email'], count=0)
             state.delete()
-        elif state.scenario_name == 'airfly':
-            log.info('Зарегистрирован на полёт: {name} {email}. Рейс: {landing}-{direction}, {date}'
+        elif state.scenario_name == 'airplane':
+            log.info('Зарегистрирован на полёт: {name} {connect}. Рейс: {landing}-{direction}, {date_reg}'
                      .format(**state.context))
-            RegistrationAirline(name=state.context['name'], email=state.context['email'],
+            RegistrationAirline(name=state.context['name'], connect=state.context['connect'],
                                 landing=state.context['landing'], direction=state.context['direction'],
-                                date=state.context['date'])
+                                date_reg=state.context['date_reg'], time_landing=state.context['time_landing'],
+                                time_direction=state.context["time_direction"])
             state.delete()
         else:
             state.delete()

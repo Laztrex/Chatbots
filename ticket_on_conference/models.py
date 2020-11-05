@@ -26,10 +26,12 @@ class Registration(db.Entity):
 class RegistrationAirline(db.Entity):
     id = PrimaryKey(int, auto=True)
     name = Required(str)
-    email = Required(str, unique=True)
+    connect = Required(str)
     landing = Required(str)
     direction = Required(str)
-    date = Required(datetime.date)  # TODO
+    date_reg = Required(str)  # TODO
+    time_landing = Required(str)
+    time_direction = Required(str)
 
 
 class BonusCardCoffee(db.Entity):
@@ -37,10 +39,6 @@ class BonusCardCoffee(db.Entity):
     email_card = Required(str, unique=True)
     count = Optional(int)
 
-
-class Coffee(db.Entity):
-    id = PrimaryKey(int, auto=True)
-    name = Required(str)
     # ingredients_qty
 
 

@@ -1,27 +1,21 @@
-from io import BytesIO
-
 from PIL import Image, ImageDraw, ImageFont, ImageColor
-
-
-# TEMPLATE_PATH = 'files/ticket_base.jpg'
-# FONT_PATH = 'files/Roboto-Regular.ttf'
-# FONT_SIZE = 20
-# BLACK = (0, 0, 0, 255)
-# NAME_OFFSET = (320, 210)
-# EMAIL_OFFSET = (320, 247)
-# AVATAR_SIZE = 100
-# AVATAR_OFFSET = (100, 200)
+import datetime
 
 
 class TicketMaker:
-    def __init__(self, name, email=None, landing='Москва', direction='Минск', date='26.10.20'):
+    def __init__(self, name, connect=None, landing='Москва', direction='Минск',
+                 date_reg='26.10.20', time_landing=None, time_direction=None,
+                 model_plane=None, place_passenger=None, row_place=None):
         self.name_passenger = [(45, 120), name]
         self.landing = [(45, 190), landing]
         self.direction = [(45, 255), direction]
-        self.date = [(280, 255), date]
-        self.drawing = [self.name_passenger, self.landing, self.direction, self.date]
-        # self.template = os.path.join("images", "ticket_template.jpg")
-        # self.font_path = os.path.join("python_snippets\\fonts", "ofont.ru_Vollkorn.ttf")
+        self.date = [(280, 255), date_reg]
+        self.time_landing = [(420, 265), datetime.datetime.strftime(
+            datetime.datetime.strptime(time_landing, "%d.%m.%Y %H:%M:%S"), "%H:%M")]
+        self.time_direction = [(420, 335), datetime.datetime.strftime(
+            datetime.datetime.strptime(time_direction, "%d.%m.%Y %H:%M:%S"), "%H:%M")]
+        self.drawing = [self.name_passenger, self.landing, self.direction,
+                        self.date, self.time_landing, self.time_direction]
         self.font_path = 'files/Roboto-Regular.ttf'
         self.template = 'files/ticket_template.png'
 
@@ -33,9 +27,6 @@ class TicketMaker:
         for text in self.drawing:
             self._print_on_ticket(pic=draw, field=text, font=font)
 
-        # out_path = out_path if out_path else 'our_ticket.png'
-        # ticket_image.save(out_path)
-        # print(f'Your ticket has been saved to {out_path}')
         return ticket_image
 
     def set_landing(self, target):
@@ -48,16 +39,6 @@ class TicketMaker:
         self.date[1] = date
 
     def _print_on_ticket(self, pic, field, font):
-        pic.text(field[0], field[1], font=font, fill=ImageColor.colormap['black'])
+        pic.text(field[0], field[1], font=font, fill=ImageColor.colormap['black'], )
 
-
-def generate_ticket(data):  # TODO: убрать, будет общий generate_ticket
-    ticket_gen = TicketMaker(**data)
-    base = ticket_gen.make()
-    temp_file = BytesIO()
-
-    base.save(temp_file, 'png')
-    temp_file.seek(0)
-
-    return temp_file
 

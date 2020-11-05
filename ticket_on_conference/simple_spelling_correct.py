@@ -7,7 +7,7 @@ alphabet = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
 
 class SpellingCorrect:
     def __init__(self, my_text):
-        self.my_dict = Counter(my_text)
+        self.my_dict = Counter(self.tokens(my_text))
 
     def tokens(self, text):
         """Возвращает список токенов (подряд идущих буквенных последовательностей) в тексте.
@@ -65,14 +65,8 @@ class SpellingCorrect:
                 str)
 
     def similarity(self, s1, a):
-        print('s1', s1)
         for i in a:
             normalized1 = s1.lower()
             if difflib.SequenceMatcher(None, normalized1, i).ratio() > 0.65:
                 return i
-        # print('s1', s1)
-        # matches = []
-        # for i in a:
-        #     normalized1 = s1.lower()
-        #     matches.append((difflib.SequenceMatcher(None, normalized1, i).ratio(), i))
-        # return max(matches, key=lambda x: x[0])
+
