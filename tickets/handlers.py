@@ -3,17 +3,13 @@
 Handler - функция, которая принимает на вход text (текст входящего сообщения) и context (dict), а возвращает bool:
 True если шаг пройден, False если данные введены неправильно.
 """
-import string
 from datetime import datetime, timedelta, timezone
-import json
 import re
-import time
-from io import BytesIO
-# import pandas as pd
+
 from dateutil.parser import parse
-from PIL import Image, ImageDraw, ImageFont
-from vk_api.keyboard import VkKeyboardColor
 from geopy.geocoders import Nominatim
+from vk_api.keyboard import VkKeyboardColor
+
 from generate_ticket import generate_ticket
 from settings import DRINKS
 

@@ -1,5 +1,6 @@
-from PIL import Image, ImageDraw, ImageFont, ImageColor
 import datetime
+
+from PIL import Image, ImageDraw, ImageFont, ImageColor
 
 
 class TicketMaker:

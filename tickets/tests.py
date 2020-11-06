@@ -89,6 +89,7 @@ class Test1(TestCase):
 
     STRANGER_WORDS = ['прЫвет', 'кофей', 'самалот']
 
+    @isolate_db
     def test_run(self):
         count = 5
         obj = {}
