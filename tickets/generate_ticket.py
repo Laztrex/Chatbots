@@ -4,17 +4,7 @@ from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont
 
 from generate_ticket_air import TicketMaker
-
-TEMPLATE_PATH = 'files/ticket_base.jpg'
-FONT_PATH = 'files/Roboto-Regular.ttf'
-FONT_SIZE = 20
-BLACK = (0, 0, 0, 255)
-NAME_OFFSET = (320, 210)
-EMAIL_OFFSET = (320, 247)
-AVATAR_SIZE = 100
-AVATAR_OFFSET = (100, 200)
-
-TEMPLATE_PATH_COFFEE = 'files/menu_coffee.jpg'
+from files.settings_img import TICKET_CONFERENCE_BASE, TICKET_CONFERENCE_PLACE, COFFEE_BASE
 
 
 def generate_ticket(data, flag='conference'):
@@ -25,24 +15,28 @@ def generate_ticket(data, flag='conference'):
     :return: BytesIO изображения
     """
     if flag == 'coffee_menu':
-        base = Image.open(TEMPLATE_PATH_COFFEE).convert("RGBA")
+        base = Image.open(COFFEE_BASE["menu_template"]).convert("RGBA")
     elif flag == 'drink':
-        base = Image.open(f'files/drinks/{data["coffee"][0]}.jpg').convert("RGBA")
+        base = Image.open(COFFEE_BASE["coffee_img"].format(data["coffee"][0])).convert("RGBA")
     elif flag == 'airplane':
         ticket_gen = TicketMaker(**data)
         base = ticket_gen.make()
     else:
-        base = Image.open(TEMPLATE_PATH).convert("RGBA")
-        font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+        base = Image.open(TICKET_CONFERENCE_BASE["template"]).convert("RGBA")
+        font = ImageFont.truetype(TICKET_CONFERENCE_BASE["font"], TICKET_CONFERENCE_BASE["font_size"])
 
         draw = ImageDraw.Draw(base)
-        draw.text(NAME_OFFSET, data["name"], font=font, fill=BLACK)
-        draw.text(EMAIL_OFFSET, data["email"], font=font, fill=BLACK)
+        draw.text(TICKET_CONFERENCE_PLACE["name_offset"], data["name"], font=font,
+                  fill=TICKET_CONFERENCE_BASE["color"])
+        draw.text(TICKET_CONFERENCE_PLACE["email_offset"], data["email"], font=font,
+                  fill=TICKET_CONFERENCE_BASE["color"])
 
-        response = requests.get(url=f'https://api.adorable.io/avatars/{AVATAR_SIZE}/{data["email"]}')
+        response = requests.get(url=f'https://api.adorable.io/avatars/{TICKET_CONFERENCE_BASE["avatar_size"]}'
+                                    f'/{data["email"]}')
+
         avatar_file_like = BytesIO(response.content)
         avatar = Image.open(avatar_file_like)
-        base.paste(avatar, AVATAR_OFFSET)
+        base.paste(avatar, TICKET_CONFERENCE_PLACE["avatar_offset"])
 
     temp_file = BytesIO()
     base.save(temp_file, 'png')

@@ -134,7 +134,8 @@ SCENARIOS = {
                 "next_step": "step6"
             },
             "step6": {
-                "text": "Спасибо за регистрацию, {name}! Мы отправили на {connect} билет, распечатайте его.",
+                "text": "Спасибо за регистрацию, {name}! "
+                        "Мы оповестим вас на {connect} в случае изменений, будьте на связи.",
                 "image": "generate_ticket_air",
                 "failure_text": None,
                 "handler": None,
@@ -157,7 +158,7 @@ SCENARIOS = {
                 "next_step": "step2"
             },
             "step2": {
-                "text": "Так, давайте проверим вашу бонусную карту...",
+                "text": "Так, давайте проверим вашу бонусную карту. Введите email",
                 "failure_text": 'Вас нет в базе:( Зарегистрируйтесь на конференцию и будет бесплатный кофе!',
                 "handler": "check_bonus_card",
                 "next_step": "step3"

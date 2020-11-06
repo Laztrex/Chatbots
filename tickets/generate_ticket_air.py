@@ -2,6 +2,8 @@ import datetime
 
 from PIL import Image, ImageDraw, ImageFont, ImageColor
 
+from files.settings_img import TICKET_AIR_BASE, TICKET_AIR_PLACE
+
 
 class TicketMaker:
     """
@@ -10,20 +12,19 @@ class TicketMaker:
     def __init__(self, name, connect=None, landing='Москва', direction='Минск',
                  date_reg='26.10.20', date_landing=None, date_direction=None,
                  model_plane=None, place_passenger=None, row_place=None):
-        self.name_passenger = [(45, 120), name]
-        self.landing = [(45, 190), landing]
-        self.direction = [(45, 255), direction]
-        self.date_reg = [(280, 255), date_reg]
-        self.date_landing = [(280, 255), datetime.datetime.strftime(
+        self.name_passenger = [TICKET_AIR_PLACE["name_passenger"], name]
+        self.landing = [TICKET_AIR_PLACE["landing"], landing]
+        self.direction = [TICKET_AIR_PLACE["direction"], direction]
+        self.date_landing = [TICKET_AIR_PLACE["date_landing"], datetime.datetime.strftime(
             datetime.datetime.strptime(date_landing, "%d.%m.%Y %H:%M:%S"), "%d.%m.%Y")]
-        self.time_landing = [(420, 265), datetime.datetime.strftime(
+        self.time_landing = [TICKET_AIR_PLACE["time_landing"], datetime.datetime.strftime(
             datetime.datetime.strptime(date_landing, "%d.%m.%Y %H:%M:%S"), "%H:%M")]
-        self.time_direction = [(420, 335), datetime.datetime.strftime(
+        self.time_direction = [TICKET_AIR_PLACE["time_direction"], datetime.datetime.strftime(
             datetime.datetime.strptime(date_direction, "%d.%m.%Y %H:%M:%S"), "%H:%M")]
         self.drawing = [self.name_passenger, self.landing, self.direction,
                         self.date_landing, self.time_landing, self.time_direction]
-        self.font_path = 'files/Roboto-Regular.ttf'
-        self.template = 'files/ticket_template.png'
+        self.font_path = TICKET_AIR_BASE["font"]
+        self.template = TICKET_AIR_BASE["template"]
 
     def make(self, out_path=None):
         """
@@ -66,5 +67,3 @@ class TicketMaker:
 
     def _print_on_ticket(self, pic, field, font):
         pic.text(field[0], field[1], font=font, fill=ImageColor.colormap['black'], )
-
-
